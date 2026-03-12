@@ -1,4 +1,4 @@
-# Aristotle-assisted proofs
+# Lean proofs of multiplication algorithms
 
 Lean 4 correctness proofs of multiplication algorithms, assisted by Aristotle. Algorithms proved:
 - Karatsuba's algorithm
