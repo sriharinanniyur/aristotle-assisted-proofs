@@ -36,7 +36,7 @@ def eval_vec_as_poly_Q {K : ℕ} (split : Vector ℚ K) (x : ℚ) : ℚ :=
 lemma digits_mul_ub (a b : ℕ) (BASE : Nat) (hBASE : BASE > 1) :
   (Nat.digits BASE (a*b)).length ≤ (Nat.digits BASE a).length + (Nat.digits BASE b).length := by
     by_cases ha : a = 0 <;> by_cases hb : b = 0 <;> simp_all [Int.natAbs_mul]
-    rw [ Nat.digits_len, Nat.digits_len, Nat.digits_len ] <;> try positivity
+    rw [ Nat.length_digits, Nat.length_digits, Nat.length_digits ] <;> try positivity
     · refine' Nat.log_lt_of_lt_pow _ _
       · positivity
       · rw [ pow_add ]
@@ -160,7 +160,7 @@ theorem tk_B_correct (KX KY BASE : ℕ) (x y : ℤ)
       have h_digits_x : digits BASE x.natAbs = (Nat.digits BASE x.natAbs).length := by
         exact?
       generalize_proofs at *; (
-      by_cases hx : x.natAbs = 0 <;> simp_all +decide [ Nat.digits_len ];
+      by_cases hx : x.natAbs = 0 <;> simp_all +decide [ Nat.length_digits ];
       · positivity;
       · exact lt_of_lt_of_le ( Nat.lt_pow_succ_log_self hBASE _ ) ‹_›)
     generalize_proofs at *; (
@@ -179,13 +179,13 @@ theorem tk_B_correct (KX KY BASE : ℕ) (x y : ℤ)
     -- By definition of `digits`, we know that `y.natAbs < BASE^(digits BASE y)`.
     have h_digits_y : y.natAbs < BASE^(digits BASE y) := by
       by_cases hy : y = 0 <;> simp_all +decide [ digits ];
-      rw [ Nat.lt_pow_iff_log_lt, Nat.digits_len ] <;> aesop;
+      exact Nat.lt_base_pow_length_digits hBASE;
     generalize_proofs at *; (
     exact h_digits_y.trans_le ( pow_le_pow_right₀ hBASE.le <| by nlinarith [ Nat.div_add_mod ( digits BASE y + KY - 1 ) KY, Nat.mod_lt ( digits BASE y + KY - 1 ) hKY, Nat.sub_add_cancel ( show 1 ≤ digits BASE y + KY from by linarith ), Nat.div_add_mod ( digits BASE y ) KY, Nat.mod_lt ( digits BASE y ) hKY ] ) ;)))
   generalize_proofs at *; (
   -- Applying the bound on the number of digits, we get the desired result.
   have h_digits_bound : ∀ {n : ℕ} {b : ℕ}, b > 1 → n > 0 → (Nat.digits b n).length ≤ Nat.log b n + 1 := by
-    intro n b hb hn; rw [ Nat.digits_len ] <;> aesop;
+    intro n b hb hn; rw [ Nat.length_digits ] <;> aesop;
   generalize_proofs at *; (
   by_cases hx : x = 0 <;> by_cases hy : y = 0 <;> simp_all +decide [ digits ];
   · exact le_trans ( h_digits_bound ( show 1 < tk_B KX KY BASE 0 y from lt_of_le_of_ne ( Nat.succ_le_of_lt ( Nat.pos_of_ne_zero ( by aesop ) ) ) ( Ne.symm <| by aesop ) ) ( Nat.pos_of_ne_zero <| by aesop ) ) ( Nat.log_lt_of_lt_pow ( by aesop ) h_bound_y ) |> le_trans <| by norm_num;
@@ -209,7 +209,7 @@ lemma piece_i_bound (KX KY KZ BASE : ℕ) (h_base : 1 < BASE) (x y z : ℕ)
     intro a; exact Nat.mod_lt _ (by
     exact pow_pos ( by positivity ) _);
   unfold digits;
-  by_cases he_zero : e = 0 <;> simp_all +decide [ Nat.digits_len ];
+  by_cases he_zero : e = 0 <;> simp_all +decide [ Nat.length_digits ];
   refine' Nat.log_lt_of_lt_pow _ _;
   · assumption;
   · exact h_lt
@@ -270,7 +270,7 @@ lemma eval_bound_y
         have h_coeff_bound : |((tk_split KX KY KY BASE x y y).get i : ℤ)| ≤ BASE ^ ((tk_P BASE x y) / (min KX KY) + 1) := by
           have := h_poly_bound i;
           unfold digits at this;
-          have := @Nat.digits_len BASE ( Int.natAbs ( ( tk_split KX KY KY BASE x y y ).get i ) );
+          have := @Nat.length_digits BASE ( Int.natAbs ( ( tk_split KX KY KY BASE x y y ).get i ) );
           by_cases hi : ( tk_split KX KY KY BASE x y y ).get i = 0 <;> simp_all +decide [ Nat.log_eq_iff ];
           exact_mod_cast Nat.le_of_lt ( Nat.lt_pow_of_log_lt h_base ( by linarith ) );
         have h_p_bound : |p| ≤ tk_vmax KX KY POINTS := by
@@ -282,7 +282,7 @@ lemma eval_bound_y
       simp +decide only [Finset.sum_mul _ _ _];
     -- The number of digits of a number $n$ in base $b$ is given by $\lfloor \log_b(n) \rfloor + 1$.
     have h_digits_formula : ∀ n : ℕ, n > 0 → digits BASE n = Nat.log BASE n + 1 := by
-      intro n hn; have := Nat.digits_len BASE n; aesop;
+      intro n hn; have := Nat.length_digits BASE n; aesop;
     by_cases h : 0 < ∑ i ∈ Finset.range KY, ( tk_vmax KX KY POINTS : ℕ ) ^ i <;> simp_all +decide [ add_comm ];
     · have h_digits_bound : digits BASE (Int.natAbs (eval_vec_as_poly (tk_split KX KY KY BASE x y y) p)) ≤ Nat.log BASE ((∑ i ∈ Finset.range KY, (tk_vmax KX KY POINTS) ^ i) * (BASE ^ ((tk_P BASE x y) / (min KX KY) + 1))) + 1 := by
         by_cases h_abs : Int.natAbs (eval_vec_as_poly (tk_split KX KY KY BASE x y y) p) = 0 <;> simp_all +decide [ digits ];
@@ -336,7 +336,7 @@ lemma digits_eval_bound (K : ℕ) (coeffs : Vector ℕ K) (p : ℤ) (B V : ℕ) 
       -- The number of digits of an integer is determined by its absolute value. If |a| ≤ |b|, then the number of digits of a is less than or equal to the number of digits of b.
       intros a b hab
       have h_digits : (Nat.digits BASE (Int.natAbs a)).length ≤ (Nat.digits BASE (Int.natAbs b)).length := by
-        by_cases ha : a = 0 <;> by_cases hb : b = 0 <;> simp_all +decide [ Nat.digits_len ];
+        by_cases ha : a = 0 <;> by_cases hb : b = 0 <;> simp_all +decide [ Nat.length_digits ];
         exact Nat.log_mono_right ( by linarith [ abs_nonneg a, abs_nonneg b ] );
       exact h_digits;
     exact h_digit_length _ _ ( le_trans h_eval_bound ( le_abs_self _ ) );
@@ -368,7 +368,7 @@ lemma eval_bound_x
         have h_coeff_bound : |((tk_split KX KY KX BASE x y x).get i : ℤ)| ≤ BASE ^ ((tk_P BASE x y) / (min KX KY) + 1) := by
           have := h_poly_bound i;
           unfold digits at this;
-          have := @Nat.digits_len BASE ( Int.natAbs ( ( tk_split KX KY KX BASE x y x ).get i ) );
+          have := @Nat.length_digits BASE ( Int.natAbs ( ( tk_split KX KY KX BASE x y x ).get i ) );
           by_cases hi : ( tk_split KX KY KX BASE x y x ).get i = 0 <;> simp_all +decide [ Nat.log_eq_iff ];
           exact_mod_cast Nat.le_of_lt ( Nat.lt_pow_of_log_lt h_base ( by linarith ) );
         have h_p_bound : |p| ≤ tk_vmax KX KY POINTS := by
@@ -380,7 +380,7 @@ lemma eval_bound_x
       simp +decide only [Finset.sum_mul _ _ _];
     -- The number of digits of a number $n$ in base $b$ is given by $\lfloor \log_b(n) \rfloor + 1$.
     have h_digits_formula : ∀ n : ℕ, n > 0 → digits BASE n = Nat.log BASE n + 1 := by
-      intro n hn; have := Nat.digits_len BASE n; aesop;
+      intro n hn; have := Nat.length_digits BASE n; aesop;
     by_cases h : 0 < ∑ i ∈ Finset.range KX, ( tk_vmax KX KY POINTS : ℕ ) ^ i <;> simp_all +decide [ add_comm ];
     · have h_digits_bound : digits BASE (Int.natAbs (eval_vec_as_poly (tk_split KX KY KX BASE x y x) p)) ≤ Nat.log BASE ((∑ i ∈ Finset.range KX, (tk_vmax KX KY POINTS) ^ i) * (BASE ^ ((tk_P BASE x y) / (min KX KY) + 1))) + 1 := by
         by_cases h_abs : Int.natAbs (eval_vec_as_poly (tk_split KX KY KX BASE x y x) p) = 0 <;> simp_all +decide [ digits ];
@@ -647,7 +647,7 @@ lemma nat_lt_pow_of_digits_le' (B n K : ℕ) (hB : 1 < B) (h : digits B n ≤ K)
   by_cases hn : n = 0
   · subst hn
     apply pow_pos (zero_lt_one.trans hB)
-  · have h_len : (Nat.digits B n).length = Nat.log B n + 1 := Nat.digits_len B n hB hn
+  · have h_len : (Nat.digits B n).length = Nat.log B n + 1 := Nat.length_digits B n hB hn
     rw [h_len] at h
     have h_log : Nat.log B n < K := Nat.lt_of_succ_le h
     apply Nat.lt_pow_of_log_lt hB h_log

@@ -1,6 +1,6 @@
 # Lean proofs of multiplication algorithms
 
-Lean 4 correctness proofs of multiplication algorithms, assisted by Aristotle. Lean 4.28 and Mathlib 4 required.
+Lean 4 correctness proofs of multiplication algorithms, assisted by Aristotle.
 
 Algorithms covered:
 - Karatsuba's algorithm

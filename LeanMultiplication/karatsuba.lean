@@ -21,11 +21,11 @@ lemma bpow_m_le_max_natAbs (x y : ℤ) (b : ℕ) (hb : 1 < b)
     (h : ¬ max (digits b x) (digits b y) ≤ 1) :
     b ^ ((max (digits b x) (digits b y) + 1) / 2) ≤
       max (Int.natAbs x) (Int.natAbs y) := by
-  -- By Nat.digits_len, (Nat.digits b (natAbs z)).length = Nat.log b (natAbs z) + 1 (when natAbs z ≠ 0 and b > 1).
+  -- By Nat.length_digits, (Nat.digits b (natAbs z)).length = Nat.log b (natAbs z) + 1 (when natAbs z ≠ 0 and b > 1).
   obtain ⟨z, hz⟩ : ∃ z ∈ [x, y], digits b z = max (digits b x) (digits b y) := by
     cases max_choice ( digits b x ) ( digits b y ) <;> aesop
   have h_len : (b.digits (z.natAbs)).length = Nat.log b (z.natAbs) + 1 := by
-    by_cases hz_zero : z.natAbs = 0 <;> simp_all +decide [ Nat.digits_len ];
+    by_cases hz_zero : z.natAbs = 0 <;> simp_all +decide [ Nat.length_digits ];
     -- Since `digits b 0 = 0`, we have `max (digits b x) (digits b y) = 0`.
     have h_max_zero : max (digits b x) (digits b y) = 0 := by
       exact hz.2.symm.trans ( by unfold digits; aesop ) ;
